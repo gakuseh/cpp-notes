@@ -1,3 +1,5 @@
+# Templates
+
 # Function Templates
 
 Templates are similar to generics in Java, and can be used for functions or
@@ -219,5 +221,10 @@ use it.
 This is why for template functions, their definitions are usually visible in the
 header file where they are declared, while other normal functions usually have
 their definitions elsewhere.
+
+# Class Templates
+
+Pretty similar to function templates, just `template <typename T>` and then use
+`T` like a normal type.
 
 # Concepts
