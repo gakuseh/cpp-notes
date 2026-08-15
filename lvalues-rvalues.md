@@ -151,15 +151,76 @@ rvalue comes from the implications of its definition. **By merely restricting
 itself to be only bindable to rvalues, rvalue references become very useful, in
 particular with [[move-semantics]]**.
 
-TODO:
+First, you can overload functions that can distinguish between rvalues and
+lvalues
 
-List examples from https://www.learncpp.com/cpp-tutorial/rvalue-references/
+```c++
+void fun(const int& lref) // l-value arguments will select this function
+{
+	std::cout << "l-value reference to const: " << lref << '\n';
+}
 
-Put the move semantics example int he move semantics doc
-https://eli.thegreenplace.net/2011/12/15/understanding-lvalues-and-rvalues-in-c-and-c/
+void fun(int&& rref) // r-value arguments will select this function
+{
+	std::cout << "r-value reference: " << rref << '\n';
+}
 
-Read the SO answer at
-https://stackoverflow.com/questions/3106110/what-is-move-semantics
+int main()
+{
+	int x{ 5 };
+	fun(x); // l-value argument calls l-value version of function
+	fun(5); // r-value argument calls r-value version of function
 
-Watch this video eventually (helpful for RAII too \[which apparently also is
-what makes rust rust ??]) https://www.youtube.com/watch?v=7Qgd9B1KuMQ
+	return 0;
+}
+```
+
+Output:
+
+```
+l-value reference to const: 5
+r-value reference: 5
+```
+
+This is important for [[move-semantics]].
+
+Once created rvalue references, are basically still lvalues. In the example
+below, the variable `var` acts as an lvalue.
+
+```c++
+std::string&& var = std::string("Hello world");
+
+std::string&& faulty = var; // Error: cannot bind lvalue to rvalue reference
+```
+
+This makes it, in most cases, practically identical to an lvalue reference or
+just a normal variable.
+
+Rather, the actual use of it is _semantic_. It emphasizes that you really care
+about the value of an object, rather than the name.
+
+For example, in the below example, we bind an lvalue, emphasizing that we care
+about the name/variable, `text`, we are binding the lvalue to.
+
+```c++
+std::string text("yotsuba")
+
+std::string& lvalRef = text;
+```
+
+On the other hand, in the below example, we turn the initial lvalue `text` into
+an rvalue using `std::move`, which tells the `operator=` of string that we
+really only care about the value, not the variable `text`. As a result, `dest`
+will move the contents of `text` from `text` into `dest`, and we must not use
+`text` again.
+
+```c++
+std::string text("Yotsuba");
+
+std::string dest = std::move(text);
+```
+
+Rvalue references do not force anybody to move things. Instead, string's
+`operator=` implementation just treats rvalues differently (compared to using
+lvalues) because usually getting an rvalue means it's from `std::move` or from
+an object that's already created.
